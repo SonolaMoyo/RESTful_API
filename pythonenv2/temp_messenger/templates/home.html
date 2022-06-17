@@ -1,24 +1,52 @@
 <!DOCTYPE html>
 <head>
-    <script src="https://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 
 <body>
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message['message'] }} </p>
-        {% endfor %}
-    {% else %}
-        <p>No messages!</p>
-    {% endif %}
+    <h1>TempMessenger</h1>
+    <div></div>
 
     <form action="/messages" id="postMessage">
-        <input type="text" placeholder="Post Message" name="message">
+        <input type="text" placeholder="Post Message" name="messages">
         <input type="submit" value="Post">
     </form>
 
 
 <script>
+
+    function poll () {
+        $.ajax ({
+            type: "GET",
+            url: "/messages",
+            dataType: "json",
+            success: function (data) {
+                updateMessages(data);
+                console.log('poll complete', data);
+            },
+            timeout: 500,
+            complete: setTimeout(poll, 1000)
+        })
+    }
+
+
+    poll()
+
+
+    function updateMessages(messages) {
+        var content = "<div>";
+        if (messages.length == 0) {
+            content += "<p>No messages!</p>";
+        } else {
+            $.each(messages, function(index, value){
+                content += "<p>" + value.message + "</p>"
+            });
+        };
+        content += "</div>";
+        $("div").replaceWith(content);
+    }
+
+
     $( "#postMessage" ).submit(function( event ){
         event.preventDefault();
 

@@ -1,6 +1,7 @@
 from ast import Try
 from email import message
 import json
+from os import stat
 from nameko.rpc import rpc, RpcProxy
 from nameko.web.handlers import http
 import redis
@@ -57,6 +58,12 @@ class webServer:
         self.message_service.save_message(message)
         
         return 204, ''
+    
+    @http('POST', '/messages')
+    def get_messages(self, request):
+        messages = self.message_service.get_all_messages()
+        formated_message = create_json_response(messages)
+        return formated_message
 
 
 def create_html_response(content):
@@ -73,3 +80,8 @@ def sort_messages_by_expiry(messages, reverse=False):
         key=lambda message: message['expires_in'],
         reverse=reverse
     )    
+    
+def create_json_response(content):
+    headers = {'Content-type': 'application/json'}
+    json_data = json.dumps(content)
+    return Response(json_data, status=200, headers=headers)
